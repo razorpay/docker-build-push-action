@@ -13,6 +13,9 @@ inputs:
   allow:
     description: "List of extra privileged entitlement (e.g., network.host,security.insecure)"
     required: false
+  annotations:
+    description: "List of annotation to set to the image"
+    required: false
   attests:
     description: "List of attestation parameters (e.g., type=sbom,generator=image)"
     required: false
@@ -30,6 +33,9 @@ inputs:
     required: false
   cache-to:
     description: "List of cache export destinations for buildx (e.g., user/app:cache, type=local,dest=path/to/dir)"
+    required: false
+  call:
+    description: "Set method for evaluating build (e.g., check)"
     required: false
   cgroup-parent:
     description: "Optional parent cgroup for the container used in the build"
@@ -80,6 +86,9 @@ inputs:
   secrets:
     description: "List of secrets to expose to the build (e.g., key=string, GIT_AUTH_TOKEN=mytoken)"
     required: false
+  secret-envs:
+    description: "List of secret env vars to expose to the build (e.g., key=envname, MY_SECRET=MY_ENV_VAR)"
+    required: false
   secret-files:
     description: "List of secret files to expose to the build (e.g., key=filename, MY_SECRET=./secret.txt)"
     required: false
@@ -112,6 +121,6 @@ outputs:
     description: 'Build result metadata'
 
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/index.js'
   post: 'dist/index.js'
