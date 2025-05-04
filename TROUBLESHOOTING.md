@@ -44,13 +44,13 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       -
         name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
       -
         name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
         with:
           buildkitd-flags: --debug
       -
@@ -58,7 +58,7 @@ jobs:
         uses: crazy-max/ghaction-setup-containerd@v2
       -
         name: Build Docker image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64,linux/arm64
@@ -111,7 +111,7 @@ to generate sanitized tags:
     tags: latest
 
 - name: Build and push
-  uses: docker/build-push-action@v3
+  uses: docker/build-push-action@v6
   with:
     context: .
     push: true
@@ -129,7 +129,7 @@ Or a dedicated step to sanitize the slug:
     script: return 'ghcr.io/${{ github.repository }}'.toLowerCase()
 
 - name: Build and push
-  uses: docker/build-push-action@v3
+  uses: docker/build-push-action@v6
   with:
     context: .
     push: true

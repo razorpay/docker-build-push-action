@@ -19,9 +19,11 @@ ___
   * [Git context](#git-context)
   * [Path context](#path-context)
 * [Examples](#examples)
+* [Summaries](#summaries)
 * [Customizing](#customizing)
   * [inputs](#inputs)
   * [outputs](#outputs)
+  * [environment variables](#environment-variables)
 * [Troubleshooting](#troubleshooting)
 * [Contributing](#contributing)
 
@@ -53,28 +55,26 @@ name: ci
 
 on:
   push:
-    branches:
-      - 'main'
 
 jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
       -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      -
         name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      -
         name: Build and push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           push: true
           tags: user/app:latest
@@ -93,36 +93,23 @@ to the default Git context:
 
 ```yaml
       -
-        # Setting up Docker Buildx with docker-container driver is required
-        # at the moment to be able to use a subdirectory with Git context
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      -
         name: Build and push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: "{{defaultContext}}:mysubdir"
           push: true
           tags: user/app:latest
 ```
 
-> **Warning**
->
-> Subdirectory for Git context is available from [BuildKit v0.9.0](https://github.com/moby/buildkit/releases/tag/v0.9.0).
-> If you're using the `docker` builder (default if `setup-buildx-action` not used),
-> then BuildKit in Docker Engine will be used. As Docker Engine < v22.x.x embeds
-> Buildkit 0.8.2 at the moment, it does not support this feature. It's therefore
-> required to use the `setup-buildx-action` at the moment.
-
 Building from the current repository automatically uses the [GitHub Token](https://docs.github.com/en/actions/security-guides/automatic-token-authentication),
 so it does not need to be passed. If you want to authenticate against another
-private repository, you have to use a [secret](https://docs.docker.com/build/ci/github-actions/examples/#secrets)
+private repository, you have to use a [secret](https://docs.docker.com/build/ci/github-actions/secrets)
 named `GIT_AUTH_TOKEN` to be able to authenticate against it with Buildx:
 
 ```yaml
       -
         name: Build and push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           push: true
           tags: user/app:latest
@@ -137,8 +124,6 @@ name: ci
 
 on:
   push:
-    branches:
-      - 'main'
 
 jobs:
   docker:
@@ -146,22 +131,22 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v3
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: actions/checkout@v4
       -
         name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      -
         name: Build and push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
@@ -170,13 +155,61 @@ jobs:
 
 ## Examples
 
-See https://docs.docker.com/build/ci/github-actions/examples/.
+* [Multi-platform image](https://docs.docker.com/build/ci/github-actions/multi-platform/)
+* [Secrets](https://docs.docker.com/build/ci/github-actions/secrets/)
+* [Push to multi-registries](https://docs.docker.com/build/ci/github-actions/push-multi-registries/)
+* [Manage tags and labels](https://docs.docker.com/build/ci/github-actions/manage-tags-labels/)
+* [Cache management](https://docs.docker.com/build/ci/github-actions/cache/)
+* [Export to Docker](https://docs.docker.com/build/ci/github-actions/export-docker/)
+* [Test before push](https://docs.docker.com/build/ci/github-actions/test-before-push/)
+* [Validating build configuration](https://docs.docker.com/build/ci/github-actions/checks/)
+* [Local registry](https://docs.docker.com/build/ci/github-actions/local-registry/)
+* [Share built image between jobs](https://docs.docker.com/build/ci/github-actions/share-image-jobs/)
+* [Named contexts](https://docs.docker.com/build/ci/github-actions/named-contexts/)
+* [Copy image between registries](https://docs.docker.com/build/ci/github-actions/copy-image-registries/)
+* [Update Docker Hub repo description](https://docs.docker.com/build/ci/github-actions/update-dockerhub-desc/)
+* [SBOM and provenance attestations](https://docs.docker.com/build/ci/github-actions/attestations/)
+* [Annotations](https://docs.docker.com/build/ci/github-actions/annotations/)
+* [Reproducible builds](https://docs.docker.com/build/ci/github-actions/reproducible-builds/)
+
+## Summaries
+
+This action generates a [job summary](https://github.blog/2022-05-09-supercharging-github-actions-with-job-summaries/)
+that provides a detailed overview of the build execution. The summary shows an
+overview of all the steps executed during the build, including the build inputs
+and eventual errors.
+
+![build-push-action job summary](./.github/build-push-summary.png)
+
+The summary also includes a link for downloading the build record with
+additional details about the build, including build stats, logs, outputs, and
+more. The build record can be imported to Docker Desktop for inspecting the
+build in greater detail.
+
+> [!WARNING]
+>
+> If you're using the [`actions/download-artifact`](https://github.com/actions/download-artifact)
+> action in your workflow, you need to ignore the build record artifacts
+> if `name` and `pattern` inputs are not specified ([defaults to download all artifacts](https://github.com/actions/download-artifact?tab=readme-ov-file#download-all-artifacts) of the workflow),
+> otherwise the action will fail:
+> ```yaml
+> - uses: actions/download-artifact@v4
+>   with:
+>     pattern: "!*.dockerbuild"
+> ```
+> More info: https://github.com/actions/toolkit/pull/1874
+
+Summaries are enabled by default, but can be disabled with the
+`DOCKER_BUILD_SUMMARY` [environment variable](#environment-variables).
+
+For more information about summaries, refer to the
+[documentation](https://docs.docker.com/go/build-summary/).
 
 ## Customizing
 
 ### inputs
 
-Following inputs can be used as `step.with` keys
+The following inputs can be used as `step.with` keys:
 
 > `List` type is a newline-delimited string
 > ```yaml
@@ -194,12 +227,14 @@ Following inputs can be used as `step.with` keys
 |--------------------|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `add-hosts`        | List/CSV    | List of [customs host-to-IP mapping](https://docs.docker.com/engine/reference/commandline/build/#add-entries-to-container-hosts-file---add-host) (e.g., `docker:10.180.0.1`)      |
 | `allow`            | List/CSV    | List of [extra privileged entitlement](https://docs.docker.com/engine/reference/commandline/buildx_build/#allow) (e.g., `network.host,security.insecure`)                         |
+| `annotations`      | List        | List of annotation to set to the image                                                                                                                                            |
 | `attests`          | List        | List of [attestation](https://docs.docker.com/build/attestations/) parameters (e.g., `type=sbom,generator=image`)                                                                 | 
 | `builder`          | String      | Builder instance (see [setup-buildx](https://github.com/docker/setup-buildx-action) action)                                                                                       |
 | `build-args`       | List        | List of [build-time variables](https://docs.docker.com/engine/reference/commandline/buildx_build/#build-arg)                                                                      |
 | `build-contexts`   | List        | List of additional [build contexts](https://docs.docker.com/engine/reference/commandline/buildx_build/#build-context) (e.g., `name=path`)                                         |
 | `cache-from`       | List        | List of [external cache sources](https://docs.docker.com/engine/reference/commandline/buildx_build/#cache-from) (e.g., `type=local,src=path/to/dir`)                              |
 | `cache-to`         | List        | List of [cache export destinations](https://docs.docker.com/engine/reference/commandline/buildx_build/#cache-to) (e.g., `type=local,dest=path/to/dir`)                            |
+| `call`             | String      | Set [method for evaluating build](https://docs.docker.com/reference/cli/docker/buildx/build/#call) (e.g., `check`)                                                                |
 | `cgroup-parent`    | String      | Optional [parent cgroup](https://docs.docker.com/engine/reference/commandline/build/#use-a-custom-parent-cgroup---cgroup-parent) for the container used in the build              |
 | `context`          | String      | Build's context is the set of files located in the specified [`PATH` or `URL`](https://docs.docker.com/engine/reference/commandline/build/) (default [Git context](#git-context)) |
 | `file`             | String      | Path to the Dockerfile. (default `{context}/Dockerfile`)                                                                                                                          |
@@ -208,13 +243,14 @@ Following inputs can be used as `step.with` keys
 | `network`          | String      | Set the networking mode for the `RUN` instructions during build                                                                                                                   |
 | `no-cache`         | Bool        | Do not use cache when building the image (default `false`)                                                                                                                        |
 | `no-cache-filters` | List/CSV    | Do not cache specified stages                                                                                                                                                     |
-| `outputs`¹         | List        | List of [output destinations](https://docs.docker.com/engine/reference/commandline/buildx_build/#output) (format: `type=local,dest=path`)                                         |
+| `outputs`          | List        | List of [output destinations](https://docs.docker.com/engine/reference/commandline/buildx_build/#output) (format: `type=local,dest=path`)                                         |
 | `platforms`        | List/CSV    | List of [target platforms](https://docs.docker.com/engine/reference/commandline/buildx_build/#platform) for build                                                                 |
 | `provenance`       | Bool/String | Generate [provenance](https://docs.docker.com/build/attestations/slsa-provenance/) attestation for the build (shorthand for `--attest=type=provenance`)                           |
 | `pull`             | Bool        | Always attempt to pull all referenced images (default `false`)                                                                                                                    |
 | `push`             | Bool        | [Push](https://docs.docker.com/engine/reference/commandline/buildx_build/#push) is a shorthand for `--output=type=registry` (default `false`)                                     |
 | `sbom`             | Bool/String | Generate [SBOM](https://docs.docker.com/build/attestations/sbom/) attestation for the build (shorthand for `--attest=type=sbom`)                                                  |
 | `secrets`          | List        | List of [secrets](https://docs.docker.com/engine/reference/commandline/buildx_build/#secret) to expose to the build (e.g., `key=string`, `GIT_AUTH_TOKEN=mytoken`)                |
+| `secret-envs`      | List/CSV    | List of [secret env vars](https://docs.docker.com/engine/reference/commandline/buildx_build/#secret) to expose to the build (e.g., `key=envname`, `MY_SECRET=MY_ENV_VAR`)         |
 | `secret-files`     | List        | List of [secret files](https://docs.docker.com/engine/reference/commandline/buildx_build/#secret) to expose to the build (e.g., `key=filename`, `MY_SECRET=./secret.txt`)         |
 | `shm-size`         | String      | Size of [`/dev/shm`](https://docs.docker.com/engine/reference/commandline/buildx_build/#shm-size) (e.g., `2g`)                                                                    |
 | `ssh`              | List        | List of [SSH agent socket or keys](https://docs.docker.com/engine/reference/commandline/buildx_build/#ssh) to expose to the build                                                 |
@@ -223,19 +259,24 @@ Following inputs can be used as `step.with` keys
 | `ulimit`           | List        | [Ulimit](https://docs.docker.com/engine/reference/commandline/buildx_build/#ulimit) options (e.g., `nofile=1024:1024`)                                                            |
 | `github-token`     | String      | GitHub Token used to authenticate against a repository for [Git context](#git-context) (default `${{ github.token }}`)                                                            |
 
-> **Note**
->
-> * ¹ multiple `outputs` are [not yet supported](https://github.com/moby/buildkit/issues/1555)
-
 ### outputs
 
-Following outputs are available
+The following outputs are available:
 
 | Name       | Type    | Description           |
 |------------|---------|-----------------------|
 | `imageid`  | String  | Image ID              |
 | `digest`   | String  | Image digest          |
 | `metadata` | JSON    | Build result metadata |
+
+### environment variables
+
+| Name                                 | Type   | Default | Description                                                                                                                                                                                                                                                        |
+|--------------------------------------|--------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DOCKER_BUILD_CHECKS_ANNOTATIONS`    | Bool   | `true`  | If `false`, GitHub annotations are not generated for [build checks](https://docs.docker.com/build/checks/)                                                                                                                                                         |
+| `DOCKER_BUILD_SUMMARY`               | Bool   | `true`  | If `false`, [build summary](https://docs.docker.com/build/ci/github-actions/build-summary/) generation is disabled                                                                                                                                                 |
+| `DOCKER_BUILD_RECORD_UPLOAD`         | Bool   | `true`  | If `false`, build record upload as [GitHub artifact](https://docs.github.com/en/actions/using-workflows/storing-workflow-data-as-artifacts) is disabled                                                                                                            |
+| `DOCKER_BUILD_RECORD_RETENTION_DAYS` | Number |         | Duration after which build record artifact will expire in days. Defaults to repository/org [retention settings](https://docs.github.com/en/actions/learn-github-actions/usage-limits-billing-and-administration#artifact-and-log-retention-policy) if unset or `0` |
 
 ## Troubleshooting
 
