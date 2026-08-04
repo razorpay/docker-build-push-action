@@ -61,6 +61,14 @@ jobs:
         run: |
           cat ./.github/e2e/${ID}/env >> $GITHUB_ENV
       -
+        # FIXME: Remove this once GitLab Registry accepts OCI artifact attestations
+        # whose subject points to a manifest pushed in the same build.
+        # https://github.com/docker/buildx/pull/3991
+        name: Set up GitLab env
+        if: inputs.provider == 'gitlab'
+        run: |
+          echo "BUILDX_NO_DEFAULT_OCI_ARTIFACT=true" >> "$GITHUB_ENV"
+      -
         name: Set up BuildKit config
         env:
           TYPE: ${{ inputs.type }}
