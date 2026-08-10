@@ -1,13 +1,14 @@
 {
   "name": "docker-build-push",
   "description": "Build and push Docker images",
-  "main": "lib/main.js",
+  "type": "module",
+  "main": "src/main.ts",
   "scripts": {
-    "build": "ncc build src/main.ts --source-map --minify --license licenses.txt",
-    "lint": "eslint src/**/*.ts __tests__/**/*.ts",
-    "format": "eslint --fix src/**/*.ts __tests__/**/*.ts",
-    "test": "jest --coverage",
-    "all": "yarn run build && yarn run format && yarn test"
+    "build": "esbuild src/main.ts --bundle --platform=node --target=node24 --format=cjs --outfile=dist/index.cjs --sourcemap --minify --keep-names && yarn run license",
+    "lint": "eslint --max-warnings=0 .",
+    "format": "eslint --fix .",
+    "test": "vitest run",
+    "license": "generate-license-file --input package.json --output dist/licenses.txt --overwrite --ci --no-spinner --eol lf"
   },
   "repository": {
     "type": "git",
@@ -19,41 +20,29 @@
     "build",
     "push"
   ],
-  "author": "Docker",
-  "contributors": [
-    {
-      "name": "CrazyMax",
-      "url": "https://crazymax.dev"
-    }
-  ],
+  "author": "Docker Inc.",
   "license": "Apache-2.0",
+  "packageManager": "yarn@4.15.0",
   "dependencies": {
-    "@actions/core": "^1.10.0",
-    "@actions/exec": "^1.1.1",
-    "@actions/github": "^5.1.1",
-    "csv-parse": "^5.3.3",
-    "handlebars": "^4.7.7",
-    "jwt-decode": "^3.1.2",
-    "semver": "^7.3.7",
-    "tmp": "^0.2.1"
+    "@actions/core": "^3.0.1",
+    "@docker/actions-toolkit": "0.92.0",
+    "handlebars": "^4.7.9"
   },
   "devDependencies": {
-    "@types/csv-parse": "^1.2.2",
-    "@types/node": "^16.11.26",
-    "@types/semver": "^7.3.9",
-    "@types/tmp": "^0.2.3",
-    "@typescript-eslint/eslint-plugin": "^5.14.0",
-    "@typescript-eslint/parser": "^5.14.0",
-    "@vercel/ncc": "^0.33.3",
-    "dotenv": "^16.0.0",
-    "eslint": "^8.11.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-jest": "^26.1.1",
-    "eslint-plugin-prettier": "^4.0.0",
-    "jest": "^27.2.5",
-    "prettier": "^2.3.1",
-    "ts-jest": "^27.1.2",
-    "ts-node": "^10.7.0",
-    "typescript": "^4.4.4"
+    "@eslint/js": "^9.39.3",
+    "@types/node": "^24.11.0",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
+    "@vitest/coverage-v8": "^4.0.18",
+    "@vitest/eslint-plugin": "^1.6.9",
+    "esbuild": "^0.28.0",
+    "eslint": "^9.39.3",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "generate-license-file": "^4.1.1",
+    "globals": "^17.3.0",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }
