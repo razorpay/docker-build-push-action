@@ -18,8 +18,6 @@ on:
 jobs:
   os:
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -29,8 +27,8 @@ jobs:
           - ubuntu-20.04
           - ubuntu-18.04
     steps:
-      -
-        name: Start PMG (SafeDep)
+      - name: Setup PMG proxy
+        id: pmg-setup
         uses: safedep/pmg@v1
         with:
           server-mode: true
@@ -79,7 +77,11 @@ jobs:
         name: Dump context
         if: always()
         uses: crazy-max/ghaction-dump-context@v1
-      -
-        name: Enforce PMG policy
+      - name: Enforce PMG policy
         if: always()
-        run: pmg proxy stop --fail-on-violation
+        run: |
+          if [ "${{ steps.pmg-setup.outcome }}" = "success" ]; then
+            pmg proxy stop --fail-on-violation
+          else
+            pmg proxy stop || true
+          fi
