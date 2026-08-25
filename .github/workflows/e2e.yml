@@ -26,6 +26,8 @@ env:
 jobs:
   docker:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -75,6 +77,13 @@ jobs:
         name: Checkout
         uses: actions/checkout@v3
       -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
+      -
         name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -121,3 +130,7 @@ jobs:
         if: github.event_name != 'pull_request'
         run: |
           docker buildx imagetools inspect ${{ matrix.slug }}:${{ steps.meta.outputs.version }} --format '{{json .}}'
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation

@@ -25,12 +25,21 @@ env:
 jobs:
   minimal:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       -
         name: Checkout
         uses: actions/checkout@v3
         with:
           path: action
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -43,9 +52,15 @@ jobs:
         uses: ./action
         with:
           file: ./test/Dockerfile
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   git-context:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     services:
       registry:
         image: registry:2
@@ -57,6 +72,13 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: action
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -92,9 +114,15 @@ jobs:
             echo "::error::Digest should not be empty"
             exit 1
           fi
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   git-context-secret:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     services:
       registry:
         image: registry:2
@@ -106,6 +134,13 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: action
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -151,9 +186,15 @@ jobs:
             echo "::error::Digest should not be empty"
             exit 1
           fi
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   path-context:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     services:
       registry:
         image: registry:2
@@ -163,6 +204,13 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -198,13 +246,26 @@ jobs:
             echo "::error::Digest should not be empty"
             exit 1
           fi
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   error:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Stop docker
         run: |
@@ -225,13 +286,26 @@ jobs:
             echo "::error::Should have failed"
             exit 1
           fi
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   error-buildx:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -261,9 +335,15 @@ jobs:
             echo "::error::Should have failed"
             exit 1
           fi
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   docker-driver:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     services:
       registry:
         image: registry:2
@@ -274,6 +354,13 @@ jobs:
         name: Checkout
         uses: actions/checkout@v3
       -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
+      -
         name: Build
         id: docker_build
         uses: ./
@@ -282,13 +369,26 @@ jobs:
           file: ./test/Dockerfile
           push: true
           tags: localhost:5000/name/app:latest
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   export-docker:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Build
         uses: ./
@@ -301,13 +401,26 @@ jobs:
         name: Inspect
         run: |
           docker image inspect myimage:latest
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   secret:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -324,13 +437,26 @@ jobs:
           secrets: |
             MYSECRET=foo
             INVALID_SECRET=
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   network:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -348,13 +474,26 @@ jobs:
           context: ./test
           tags: name/app:latest
           network: host
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   shm-size:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -370,13 +509,26 @@ jobs:
           file: ./test/shmsize.Dockerfile
           tags: name/app:latest
           shm-size: 2g
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   ulimit:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -395,13 +547,26 @@ jobs:
           ulimit: |
             nofile=1024:1024
             nproc=3
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   cgroup-parent:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -418,13 +583,26 @@ jobs:
           file: ./test/cgroup.Dockerfile
           tags: name/app:latest
           cgroup-parent: foo
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   add-hosts:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -443,13 +621,26 @@ jobs:
           add-hosts: |
             docker:10.180.0.1
             foo:10.0.0.1
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   build-contexts:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -466,13 +657,26 @@ jobs:
           build-contexts: |
             alpine=docker-image://debian:stable-slim
           tags: name/app:latest
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   no-cache-filters:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -490,9 +694,15 @@ jobs:
           tags: name/app:latest
           cache-from: type=gha,scope=nocachefilter
           cache-to: type=gha,scope=nocachefilter,mode=max
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   attests-compat:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -508,6 +718,13 @@ jobs:
         name: Checkout
         uses: actions/checkout@v3
       -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
+      -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
         with:
@@ -522,9 +739,15 @@ jobs:
           context: ./test/go
           file: ./test/go/Dockerfile
           outputs: type=cacheonly
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   provenance:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -538,6 +761,13 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -557,9 +787,15 @@ jobs:
           provenance: ${{ matrix.attrs }}
           cache-from: type=gha,scope=provenance
           cache-to: type=gha,scope=provenance,mode=max
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   sbom:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -577,6 +813,13 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -616,9 +859,15 @@ jobs:
         if: matrix.target == 'binary'
         run: |
           cat /tmp/buildx-build/sbom.spdx.json | jq
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   multi:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -634,6 +883,13 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -670,9 +926,15 @@ jobs:
             echo "::error::Digest should not be empty"
             exit 1
           fi
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   digest:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     env:
       DOCKER_IMAGE: localhost:5000/name/app
     strategy:
@@ -709,6 +971,13 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -758,9 +1027,15 @@ jobs:
         run: |
           set -x
           docker image inspect ${{ steps.docker_build.outputs.imageid }}
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   registry-cache:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     services:
       registry:
         image: registry:2
@@ -770,6 +1045,13 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -807,9 +1089,15 @@ jobs:
             echo "::error::Digest should not be empty"
             exit 1
           fi
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   github-cache:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     services:
       registry:
         image: registry:2
@@ -819,6 +1107,13 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -848,13 +1143,26 @@ jobs:
         name: Inspect
         run: |
           docker buildx imagetools inspect localhost:5000/name/app:1.0.0 --format '{{json .}}'
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
   standalone:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Start PMG (SafeDep)
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
       -
         name: Uninstall moby cli
         run: |
@@ -873,3 +1181,7 @@ jobs:
         with:
           context: ./test
           file: ./test/Dockerfile
+      -
+        name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
