@@ -94,7 +94,7 @@ jobs:
           fi
 
   git-context-secret:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux-amd64]
     services:
       registry:
         image: registry:2
@@ -303,7 +303,7 @@ jobs:
           docker image inspect myimage:latest
 
   secret:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux-amd64]
     steps:
       -
         name: Checkout
@@ -372,7 +372,7 @@ jobs:
           shm-size: 2g
 
   ulimit:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux-amd64]
     steps:
       -
         name: Checkout
@@ -445,7 +445,7 @@ jobs:
             foo:10.0.0.1
 
   build-contexts:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux-amd64]
     steps:
       -
         name: Checkout
@@ -492,7 +492,7 @@ jobs:
           cache-to: type=gha,scope=nocachefilter,mode=max
 
   attests-compat:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux-amd64]
     strategy:
       fail-fast: false
       matrix:
@@ -618,7 +618,7 @@ jobs:
           cat /tmp/buildx-build/sbom.spdx.json | jq
 
   multi:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux-amd64]
     strategy:
       fail-fast: false
       matrix:
@@ -672,7 +672,7 @@ jobs:
           fi
 
   digest:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux-amd64]
     env:
       DOCKER_IMAGE: localhost:5000/name/app
     strategy:
@@ -850,7 +850,7 @@ jobs:
           docker buildx imagetools inspect localhost:5000/name/app:1.0.0 --format '{{json .}}'
 
   standalone:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux-amd64]
     steps:
       -
         name: Checkout
